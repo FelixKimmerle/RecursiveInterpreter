@@ -9,14 +9,11 @@ public class Compiler implements Expr.Visitor<Integer>, Stmt.Visitor<Void> {
 
     Stack<List<Integer>> stack = new Stack<List<Integer>>();
     Map<String, Expr> map = new HashMap<>();
-    Expr exprcall = null;
 
-    @Override
-    public Void visitBlockStmt(Stmt.Block stmt) {
-        for (Stmt stmt2 : stmt.statements) {
-            stmt2.accept(this);
+    public void interpret(List<Stmt> stmts) {
+        for (Stmt stmt : stmts) {
+            stmt.accept(this);
         }
-        return null;
     }
 
     @Override
@@ -69,6 +66,7 @@ public class Compiler implements Expr.Visitor<Integer>, Stmt.Visitor<Void> {
         stack.pop();
         for (int i = 0; i < stack.peek().get(0); i++) {
             params = new LinkedList<>(stack.peek());
+            params.removeFirst();
             params.addFirst(i);
             params.addFirst(prev);
             stack.push(params);

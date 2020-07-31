@@ -9,13 +9,13 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    Stmt.Block parse() {
+    List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
             statements.add(statement());
         }
 
-        return new Stmt.Block(statements);
+        return statements;
     }
 
     private Stmt statement() {

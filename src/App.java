@@ -1,16 +1,23 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 public class App {
-    public static void main(String[] args) throws Exception {
-        Scanner scanner = new Scanner("add = rec(pi(1,1),s(pi(3,1))); delta = rec(c(0,0),add(pi(2,1),s(pi(2,2)))); delta(6);");
-        List<Token> tokens = scanner.scanTokens();
-        for (Token token : tokens) {
-            System.out.println(token);
+    public static void runfile(String path) {
+        try {
+            String source = new java.util.Scanner(new File(path)).useDelimiter("\\Z").next();
+            Scanner scanner = new Scanner(source);
+            List<Token> tokens = scanner.scanTokens();
+            Parser parser = new Parser(tokens);
+            List<Stmt> stmts = parser.parse();
+            Compiler compiler = new Compiler();
+            compiler.interpret(stmts);
+        } catch (FileNotFoundException e) {
+            System.out.println("File: " + path + " not found!");
         }
-        Parser parser = new Parser(tokens);
-        Stmt.Block stmts = parser.parse();
-        
-        Compiler compiler = new Compiler();
-        compiler.visitBlockStmt(stmts);
+    }
+
+    public static void main(String[] args) throws Exception {
+        runfile("test.pr");
     }
 }
