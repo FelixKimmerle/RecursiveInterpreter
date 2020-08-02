@@ -18,6 +18,6 @@ public class App {
     }
 
     public static void main(String[] args) throws Exception {
-        runfile("test.pr");
+        runfile("muetest.pr");
     }
 }

@@ -1,14 +1,10 @@
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 public class Compiler implements Expr.Visitor<Integer>, Stmt.Visitor<Void> {
 
-    Stack<List<Integer>> stack = new Stack<List<Integer>>();
-    Map<String, Expr> map = new HashMap<>();
+    Stack<LinkedList<Integer>> stack = new Stack<LinkedList<Integer>>();
 
     public void interpret(List<Stmt> stmts) {
         for (Stmt stmt : stmts) {
@@ -16,11 +12,6 @@ public class Compiler implements Expr.Visitor<Integer>, Stmt.Visitor<Void> {
         }
     }
 
-    @Override
-    public Void visitAssingStmt(Stmt.Assign stmt) {
-        map.put(stmt.name, stmt.value);
-        return null;
-    }
 
     @Override
     public Void visitExecuteStmt(Stmt.Execute stmt) {
@@ -30,14 +21,10 @@ public class Compiler implements Expr.Visitor<Integer>, Stmt.Visitor<Void> {
         return null;
     }
 
-    @Override
-    public Integer visitCallVarExpr(Expr.CallVar expr) {
-        return map.get(expr.name).accept(this);
-    }
 
     @Override
     public Integer visitCallExpr(Expr.Call expr) {
-        List<Integer> args = new ArrayList<>();
+        LinkedList<Integer> args = new LinkedList<Integer>();
         for (Expr arg : expr.args) {
             args.add(arg.accept(this));
         }
@@ -79,6 +66,17 @@ public class Compiler implements Expr.Visitor<Integer>, Stmt.Visitor<Void> {
     @Override
     public Integer visitConstant(Expr.Constant expr) {
         return expr.number;
+    }
+
+    @Override
+    public Integer visitMue(Expr.Mue expr) {
+        int x = 0;
+        stack.peek().addFirst(x);
+        while(expr.function.accept(this) != 0){
+            x++;
+            stack.peek().set(0, x);
+        }
+        return x;
     }
 
 }

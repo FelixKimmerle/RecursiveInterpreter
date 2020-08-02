@@ -2,8 +2,6 @@ import java.util.List;
 
 abstract class Expr {
     interface Visitor<R> {
-        R visitCallVarExpr(CallVar expr);
-
         R visitCallExpr(Call expr);
 
         R visitSuccessorExpr(Successor expr);
@@ -13,6 +11,8 @@ abstract class Expr {
         R visitRecExpr(Rec expr);
 
         R visitConstant(Constant expr);
+
+        R visitMue(Mue expr);
     }
 
     static class Constant extends Expr {
@@ -28,6 +28,7 @@ abstract class Expr {
             return visitor.visitConstant(this);
         }
     }
+
     static class Successor extends Expr {
         final Expr param;
 
@@ -55,11 +56,25 @@ abstract class Expr {
         }
     }
 
+    static class Mue extends Expr {
+
+        final Expr function;
+
+        public Mue(Expr function) {
+            this.function = function;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitMue(this);
+        }
+
+    }
+
     static class Rec extends Expr {
         final Expr zero;
         final Expr recursive;
 
-        public Rec(Expr zero, Expr recursive){
+        public Rec(Expr zero, Expr recursive) {
             this.zero = zero;
             this.recursive = recursive;
         }
@@ -67,23 +82,11 @@ abstract class Expr {
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitRecExpr(this);
         }
-        
-    }
 
-    static class CallVar extends Expr {
-        CallVar(String name) {
-            this.name = name;
-        }
-
-        <R> R accept(Visitor<R> visitor) {
-            return visitor.visitCallVarExpr(this);
-        }
-
-        final String name;
     }
 
     static class Call extends Expr {
-        Call(Expr expr,List<Expr> args) {
+        Call(Expr expr, List<Expr> args) {
             this.args = args;
             this.expr = expr;
         }

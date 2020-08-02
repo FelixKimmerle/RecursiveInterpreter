@@ -1,9 +1,13 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class Parser {
     private final List<Token> tokens;
     private int current = 0;
+    Map<String, Expr> map = new HashMap<>();
 
     Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -12,30 +16,27 @@ public class Parser {
     List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(statement());
+
+            if (checkNext(TokenType.EQUAL)) {
+                String name = consume(TokenType.IDENTIFIER, "Expect identifier.").lexeme;
+                consume(TokenType.EQUAL, "Expect  = .");
+                map.put(name, expression());
+            } else {// if (checkNext(TokenType.LEFT_PAREN)) {
+                statements.add(execute());
+
+            }
+            consume(TokenType.SEMICOLON, "Expect ; at end of statement.");
+
         }
 
         return statements;
-    }
-
-    private Stmt statement() {
-        Stmt stmt = null;
-        if (checkNext(TokenType.EQUAL)) {
-            String name = consume(TokenType.IDENTIFIER, "Expect identifier.").lexeme;
-            consume(TokenType.EQUAL, "Expect  = .");
-            stmt = new Stmt.Assign(name, expression());
-        } else if (checkNext(TokenType.LEFT_PAREN)) {
-            stmt = execute();
-        }
-        consume(TokenType.SEMICOLON, "Expect ; at end of statement.");
-        return stmt;
     }
 
     private Stmt execute() {
         Expr right = expression();
         consume(TokenType.LEFT_PAREN, "Expect (.");
 
-        List<Integer> arguments = new ArrayList<>();
+        LinkedList<Integer> arguments = new LinkedList<>();
         if (!check(TokenType.RIGHT_PAREN)) {
             do {
                 arguments.add(consume(TokenType.NUMBER, "Expect numer as parameter.").literal);
@@ -74,19 +75,23 @@ public class Parser {
             Expr recursive = expression();
             consume(TokenType.RIGHT_PAREN, "Expect ).");
             result = new Expr.Rec(zero, recursive);
-
+ 
         } else if (match(TokenType.IDENTIFIER)) {
             String name = previous().lexeme;
-            result = new Expr.CallVar(name);
+            if (!map.containsKey(name)) {
+                System.out.println("Unknown function: " + name);
+            }
+            result = map.get(name);
+        } else if (match(TokenType.MUE)) {
+            result = new Expr.Mue(expression());
         }
         int pos = current;
-        if(match(TokenType.LEFT_PAREN)){
+        if (match(TokenType.LEFT_PAREN)) {
             List<Expr> arguments = new ArrayList<>();
             if (!check(TokenType.RIGHT_PAREN)) {
                 do {
                     Expr arg = expression();
-                    if(arg == null)
-                    {
+                    if (arg == null) {
                         current = pos;
                         return result;
                     }
